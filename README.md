@@ -3,18 +3,31 @@
 This app currently extracts terms from the c4c data stored in solr, and returns a list that contains metadata per document, e.g. examples/example_output.json
 
 To build a Docker image run:
+```
 docker build . -t c4concepts
-
+```
 To run the app:
+```
 docker run -d --name $mycontainer -p 80:80 c4concepts
-
+```
 To post a request use:
+```
 http://0.0.0.0:80/c4concepts
-
-You should post a json (see example.json) with the keys: "gemeente", "max_number_of_docs", "max_ngram_length", "language_code" , "auth_key" and "auth_value". The authorisation parameters could also be given via Postman, but this version will support manual input.  
+```
+Or you can run the app locally:
+```
+uvicorn main:app --reload
+```
+You should post a json (see example.json) with the keys: "gemeente", "max_number_of_docs", "max_ngram_length", "language_code" , "auth_key" and "auth_value". 
+The authorisation parameters could also be given via Postman, but this version will support manual input.  
 Make sure that the data of the required 'gemeente' has been scraped, and is stored in solr.
 The parameter max_number_of_docs was added to avoid iterating over all the data each time the app is launched.
 The parameter max_ngram_length is self-explanatory.
+
+## TODO
+- Add device parameter ('cpu' or 'cuda:0')
+- Add open linked data
+- Implement relation extraction for all models
 
 ## POS-taggers per language:
 - Dutch: SpaCy, noun chunks not supported
