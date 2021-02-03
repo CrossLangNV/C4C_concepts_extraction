@@ -203,6 +203,7 @@ def get_num_found(start_url, max_number_of_docs, auth_key, auth_value):
 
 
 def load_sentence_classifier(lang_code):
+    #TODO other languages
     if lang_code == 'DE':
         model = load_german_bert()
         return model
@@ -215,11 +216,17 @@ def load_german_bert():
     return model
 
 
+def get_doc_content(doc_data):
+    doc_content = doc_data['content']
+    doc_content = split_page(doc_content[0])
+    return doc_content
+
+
 def get_doc_metadata(doc, lang_code, max_len_ngram):
     d1 = get_url_pdf_and_events(doc)
     content = get_doc_content(doc)
     terms = launch_term_extraction(lang_code, content, max_len_ngram)
-    terms = [term for term in terms if term[0].isupper()]
+    # terms = [term for term in terms if term[0].isupper()]  # only for german
     terms_tf_idf = calculate_tf_idf(content, terms, max_len_ngram)
     d1.update({'terms': terms_tf_idf})
     model = load_sentence_classifier(lang_code)

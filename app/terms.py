@@ -2,7 +2,7 @@ import string
 import spacy
 
 INVALID_POS_TAGS = ['DET', 'PUNCT', 'ADP', 'CCONJ', 'SYM', 'NUM', 'PRON', 'SCONJ', 'ADV']
-PUNCTUATION_AND_DIGITS = string.punctuation.replace('-', '0123456789')
+PUNCTUATION_AND_DIGITS = string.punctuation.replace('-', '0123456789').replace('\'', '')
 
 def clean_non_category_words_back(ngram):
     """
@@ -13,7 +13,7 @@ def clean_non_category_words_back(ngram):
     This function is for cleaning ngrams such as 'decision with which' / 'decision which' / 'decision as from which'
     """
     if ngram[-1].pos_ in INVALID_POS_TAGS:
-        clean_non_category_words_back(ngram[:-1])
+        return clean_non_category_words_back(ngram[:-1])
     else:
         return ngram
 
@@ -26,7 +26,7 @@ def clean_non_category_words_front(ngram):
     This function is for cleaning ngrams such as 'of the decision' / 'the decision' / 'as of the decision'
     """
     if ngram[0].pos_ in INVALID_POS_TAGS:
-        clean_non_category_words_front(ngram[1:])
+        return clean_non_category_words_front(ngram[1:])
     else:
         return ngram
 

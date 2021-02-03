@@ -26,8 +26,10 @@ from .models import BertSequenceClassifier, DistilBertSequenceClassifier
 
 Bert_model = 'Bert-base-uncased'
 german_bert_model = 'dbmdz/bert-base-german-uncased'
+french_bert_model = 'dbmdz/bert-base-french-europeana-cased'
 #CHOSEN_DEVICE = 'cuda:0'
 CHOSEN_DEVICE = 'cpu'
+
 class BERTForSentenceClassification(object):
     """
     Classifier based on pretrained BERT model
@@ -83,7 +85,7 @@ class BERTForSentenceClassification(object):
     def from_bert_model(cls,
                         model_storage_directory: Path,
                         output_dim: int,
-                        bert_model: (str,) = german_bert_model,  # amended AK
+                        bert_model: (str,),
                         *args,
                         **kwargs
                         ):

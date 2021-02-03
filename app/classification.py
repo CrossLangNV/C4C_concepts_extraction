@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 def clean_line(s):
     cleaned_line = s.translate(
-        str.maketrans('', '', punctuation.replace(',-./:;', '').replace('@', '').replace('+', '') + '←' + '↑'))
+        str.maketrans('', '', punctuation.replace(',-./:;', '').replace('@', '').replace('+', '').replace('\'', '') + '←' + '↑'))
     return cleaned_line.strip()
 
 
@@ -32,12 +32,6 @@ def get_url_pdf_and_events(doc_data):
     doc_html_content = doc_data['content_html'][0]
     metadata.update({'life_events': get_life_events(doc_html_content)})
     return metadata
-
-
-def get_doc_content(doc_data):
-    doc_content = doc_data['content']
-    doc_content = split_page(doc_content[0])
-    return doc_content
 
 
 def get_classified_data(sentences, pred_labels):
