@@ -222,6 +222,7 @@ def get_doc_content(doc_data):
     return doc_content
 
 
+"""
 def get_doc_metadata(doc, lang_code, max_len_ngram):
     d1 = get_url_pdf_and_events(doc)
     content = get_doc_content(doc)
@@ -235,3 +236,4 @@ def get_doc_metadata(doc, lang_code, max_len_ngram):
     d2 = parse_procedures(list(contact_info))
     d = {**d1, **d2}
     return d
+"""

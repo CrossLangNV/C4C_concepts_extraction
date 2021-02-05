@@ -26,8 +26,11 @@ The parameter max_ngram_length is self-explanatory.
 
 ## TODO
 - Add device parameter ('cpu' or 'cuda:0')
-- Add open linked data
-- Implement relation extraction for all models
+- Relation extraction annotation
+
+## Procedures detection:
+We make use of a pretrained multilingual BERT model to detect segments that contain procedures.
+The model currently supports DE/NL/FR, other languages t.b.a.
 
 ## POS-taggers per language:
 - Dutch: SpaCy, noun chunks not supported

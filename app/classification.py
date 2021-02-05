@@ -22,7 +22,7 @@ def get_life_events(html_content):
     return life_events
 
 
-def get_url_pdf_and_events(doc_data):
+def get_doc_metadata(doc_data):
     metadata = {}
     if 'pdf_docs' in doc_data:
         doc_pdf = doc_data['pdf_docs']
@@ -30,6 +30,7 @@ def get_url_pdf_and_events(doc_data):
     doc_url = doc_data['url']
     metadata.update({'url': doc_url})
     doc_html_content = doc_data['content_html'][0]
+    metadata.update({'html_content' : doc_html_content})
     metadata.update({'life_events': get_life_events(doc_html_content)})
     return metadata
 
