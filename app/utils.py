@@ -8,13 +8,12 @@ from spacy.lang.sl.stop_words import STOP_WORDS as STOP_WORDS_SL
 from spacy.lang.hr.stop_words import STOP_WORDS as STOP_WORDS_HR
 from spacy.lang.nb.stop_words import STOP_WORDS as STOP_WORDS_NB
 import spacy_udpipe
-from terms import *
-from classification import *
-from metrics import *
+from string import punctuation
+from bs4 import BeautifulSoup
 import pandas as pd
 import requests
 from requests.auth import HTTPBasicAuth
-from sententce_classifier.models.BERT import BERTForSentenceClassification
+from sentence_classifier.models.BERT import BERTForSentenceClassification
 import de_core_news_lg
 import en_core_web_lg
 import nl_core_news_lg
@@ -22,7 +21,7 @@ import fr_core_news_lg
 import nb_core_news_lg
 import it_core_news_lg
 
-GERMAN_CLASSIFIER_DIR = 'sententce_classifier/models/run_2021_01_14_16_56_45_b60e65d9a255'
+GERMAN_CLASSIFIER_DIR = 'sentence_classifier/models/run_2021_01_14_16_56_45_b60e65d9a255'
 
 POS_TAG_DET = 'DET'
 
@@ -89,14 +88,21 @@ def load_it_model():
 
 
 def load_sl_model():
-    spacy_udpipe.download("sl")
-    NLP = spacy_udpipe.load("sl")
+    try:
+        NLP = spacy_udpipe.load("sl")
+    except:
+        spacy_udpipe.download("sl")
+        NLP = spacy_udpipe.load("sl")
     return NLP
 
 
 def load_hr_model():
-    spacy_udpipe.download("hr")
-    NLP = spacy_udpipe.load("hr")
+    try:
+        NLP = spacy_udpipe.load("hr")
+    except:
+        spacy_udpipe.download("hr")
+        NLP = spacy_udpipe.load("hr")
+
     return NLP
 
 
@@ -216,24 +222,34 @@ def load_german_bert():
     return model
 
 
-def get_doc_content(doc_data):
-    doc_content = doc_data['content']
-    doc_content = split_page(doc_content[0])
-    return doc_content
+def clean_line(s):
+    cleaned_line = s.translate(
+        str.maketrans('', '', punctuation.replace(',-./:;', '').replace('@', '').replace('+', '').replace('\'', '') + '←' + '↑'))
+    return cleaned_line.strip()
 
 
-"""
-def get_doc_metadata(doc, lang_code, max_len_ngram):
-    d1 = get_url_pdf_and_events(doc)
-    content = get_doc_content(doc)
-    terms = launch_term_extraction(lang_code, content, max_len_ngram)
-    # terms = [term for term in terms if term[0].isupper()]  # only for german
-    terms_tf_idf = calculate_tf_idf(content, terms, max_len_ngram)
-    d1.update({'terms': terms_tf_idf})
-    model = load_sentence_classifier(lang_code)
-    pred_labels, pred_proba = model.predict(content)
-    contact_info = get_classified_data(content, pred_labels)
-    d2 = parse_procedures(list(contact_info))
-    d = {**d1, **d2}
-    return d
-"""
+def split_page(page):
+    page_as_a_list = page.replace('\t', '').split('\n')
+    page_as_a_list = [element.strip(' ') for element in page_as_a_list]
+    page_as_a_list = list(filter(None, page_as_a_list))
+    page_as_a_list = [clean_line(line) for line in page_as_a_list]
+    return page_as_a_list
+
+
+def get_life_events(html_content):
+    soup = BeautifulSoup(html_content, "html.parser")
+    life_events = [el.text for el in soup.findAll('h2')]
+    return life_events
+
+
+
+def get_classified_data(sentences, pred_labels):
+    for sentence, label in zip(sentences, pred_labels):
+        if label == 1:
+            yield (sentence)
+
+
+def get_doc_content(doc):
+    content = doc['content'][0]
+    content = split_page(content)
+    return content

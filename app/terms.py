@@ -41,7 +41,7 @@ def clean_non_category_words(ngram):
         clean_ngram = clean_non_category_words_back(clean_front_ngram)
         return clean_ngram
 
-def extract_terms(doc):
+def yield_terms(doc):
     """
 
     :param doc: SpaCy Doc object
@@ -102,26 +102,35 @@ def term_does_not_contain_stopwords(noun_phrase, STOP_WORDS):
     else:
         return False
 
-def term_length_is_conform(term, MAX_LEN_NGRAM):
+def term_length_is_conform(term, max_len_ngram):
     """
 
     :param term: SpaCy span object
-    :param MAX_LEN_NGRAM: int
+    :param max_len_ngram: int
     :return: True or False
     """
-    if MAX_LEN_NGRAM >= len(term) > 0:
+    if max_len_ngram >= len(term) > 0:
         return True
     else:
         return False
 
-def process_corpus(corpus, NLP, GRAMMAR, STOP_WORDS, MAX_LEN_NGRAM):
+
+def process_terms(terms, language_code):
+    if language_code == 'DE':
+        terms = [term for term in terms if term[0].isupper()]
+    else:
+        terms = [term.islower() for term in terms]
+    return set(terms)
+
+def extract_terms(corpus, max_len_ngram, nlp, GRAMMAR=None, STOP_WORDS=None):
     """
+    :param max_len_ngram: int
     :param corpus: list of documents
     :return: list of terms
     """
     for page in corpus:
-        doc = NLP(page)
-        term_list = extract_terms(doc)
+        doc = nlp(page)
+        term_list = yield_terms(doc)
         for term in term_list:
             if term_text_is_clean(term):
                 if isinstance(term, spacy.tokens.token.Token):
@@ -130,7 +139,7 @@ def process_corpus(corpus, NLP, GRAMMAR, STOP_WORDS, MAX_LEN_NGRAM):
                 else:
                     ngram = clean_non_category_words(term)  # will return empty strings sometimes
                     if ngram:
-                        if term_length_is_conform(ngram, MAX_LEN_NGRAM):
+                        if term_length_is_conform(ngram, max_len_ngram):
                             #TODO and term_does_not_contain_stopwords(ngram, STOP_WORDS): optional since aggressive
                             #TODO and term_grammar_is_clean(ngram, GRAMMAR): optional since aggressive
                             yield ' '.join([word.lemma_ for word in ngram]).strip()
