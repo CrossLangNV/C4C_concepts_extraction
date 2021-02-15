@@ -35,15 +35,15 @@ def annotateRelations(relations: dict, cas: Cas):
 
     for tag in cas_view.select(PROCEDURES_TYPE):
         text = tag.get_covered_text()
-        for end_index, (i, term) in A.iter(text):
+        for end_index, (tfidf, term) in A.iter(text):
             if not term:
                 continue
             start_index = end_index - (len(term) - 1)
             # print( start_index, end_index, term, text  )
             if is_token(start_index, end_index, text):
                 cas_view.add_annotation(
-                    Token(begin=tag.begin + start_index, end=tag.begin + end_index + 1, dependency=relations[term],
-                          term=term))
+                    Token(begin=tag.begin + start_index, end=tag.begin + end_index + 1, pos=relations[term],
+                          id=term))
 
 
 def annotateProcedures(procedures, begin_end_positions, cas):

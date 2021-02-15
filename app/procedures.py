@@ -1,5 +1,5 @@
 import spacy
-from app.terms import yield_terms
+from terms import yield_terms
 
 
 def launch_relation_extraction(sentences, nlp):

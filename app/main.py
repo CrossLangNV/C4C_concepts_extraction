@@ -42,7 +42,6 @@ def main(f: Item):
     max_len_ngram = f.max_ngram_length
     auth_key = f.auth_key
     auth_value = f.auth_value
-    data = []
 
     for step in range(0, max_number_of_docs, BATCH_NUMBER):  #TODO process last step
         batch_url = start_url + gemeente + START_ROW + str(step)
@@ -136,7 +135,6 @@ def main(f: Item):
         batch_data = get_batch_data(batch_url, auth_key, auth_value)
         for doc in batch_data['response']['docs']:
             d = dict()
-            print(doc['url'])
             html_content = doc['content_html'][0]
             xmi = get_html2text_cas(html_content)
             cas = xmi2cas(xmi)
@@ -144,14 +142,18 @@ def main(f: Item):
             nlp = get_pos_tagger(language_code)
             pred_labels, _ = MODEL.predict(sentences)
             procedures = [sentence for sentence, score in zip(sentences, pred_labels) if score == 1]
+            annotateProcedures(procedures, begin_end_positions, cas)
             terms = extract_terms(procedures, max_len_ngram, nlp)
             terms = process_terms(terms, language_code)
-            terms_tf_idf = calculate_tf_idf(procedures, terms, max_len_ngram)
-            relations = launch_relation_extraction(procedures)
-            annotateProcedures(procedures, begin_end_positions, pred_labels, cas)
-            annotateTerms(cas, terms_tf_idf)
-            annotateRelations(cas, list(relations))
-            d.update({'cas' : base64.b64encode(cas.to_xmi())})
+            if terms:
+                terms_tf_idf = calculate_tf_idf(procedures, terms, max_len_ngram)
+                annotateTerms(cas, terms_tf_idf)
+            relations = launch_relation_extraction(procedures, nlp)
+            relations = dict((str(key.text),d[key]) for d in relations for key in d)
+            # relations = { August: 'sb', ein Schreiben des Magistrats der Stadt Wien in meiner Post,: 'oa', ein Brief vom: 'sb'}
+            if relations:
+                annotateRelations(relations, cas)
+            d.update({'cas' : cas.to_xmi()})
             data.append(d)
 
     return JSONResponse(data)
