@@ -33,7 +33,7 @@ def annotateRelations(relations: dict, cas: Cas):
         A.add_word(term, (i, term))
     A.make_automaton()
 
-    for tag in cas_view.select(PROCEDURES_TYPE):
+    for tag in cas_view.select(VALUE_BETWEEN_TAG_TYPE):
         text = tag.get_covered_text()
         for end_index, (tfidf, term) in A.iter(text):
             if not term:

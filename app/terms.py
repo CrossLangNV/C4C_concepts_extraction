@@ -1,5 +1,6 @@
 import string
 import spacy
+import language_tool_python
 
 INVALID_POS_TAGS = ['DET', 'PUNCT', 'ADP', 'CCONJ', 'SYM', 'NUM', 'PRON', 'SCONJ', 'ADV']
 PUNCTUATION_AND_DIGITS = string.punctuation.replace('-', '0123456789').replace('\'', '')
@@ -119,10 +120,17 @@ def process_terms(terms, language_code):
     if language_code == 'DE':
         terms = [term for term in terms if term[0].isupper()]
     else:
-        terms = [term.islower() for term in terms]
-    return set(terms)
+        terms = [term.lower() for term in terms]
+    tool = language_tool_python.LanguageTool(language_code)
+    final_terms = {}
+    for x in terms:
+        m = tool.check(x.capitalize())
+    if not m:
+        final_terms.add(x)
+    return final_terms
 
-def extract_terms(corpus, max_len_ngram, nlp, GRAMMAR=None, STOP_WORDS=None):
+
+def extract_terms(corpus, max_len_ngram, nlp, grammar=None, stop_words=None):
     """
     :param max_len_ngram: int
     :param corpus: list of documents
@@ -137,11 +145,19 @@ def extract_terms(corpus, max_len_ngram, nlp, GRAMMAR=None, STOP_WORDS=None):
                     yield term.text.lower()
                     yield term.lemma_
                 else:
-                    ngram = clean_non_category_words(term)  # will return empty strings sometimes
+                    ngram = clean_non_category_words(term)  # will sometimes return empty strings
                     if ngram:
-                        if term_length_is_conform(ngram, max_len_ngram):
-                            #TODO and term_does_not_contain_stopwords(ngram, STOP_WORDS): optional since aggressive
-                            #TODO and term_grammar_is_clean(ngram, GRAMMAR): optional since aggressive
+                        conditions = [term_length_is_conform(ngram, max_len_ngram)]
+
+                        if stop_words:
+                            condition_two = term_does_not_contain_stopwords(ngram, stop_words)
+                            conditions.append(condition_two)
+
+                        if grammar:
+                            condition_three = term_grammar_is_clean(ngram, grammar)
+                            conditions.append(condition_three)
+
+                        if all(conditions):
                             yield ' '.join([word.lemma_ for word in ngram]).strip()
                             yield ngram.text.strip()
             else:

@@ -1,13 +1,13 @@
 import spacy
-from terms import yield_terms
+from terms import yield_terms, clean_non_category_words, term_length_is_conform
 
 
-def launch_relation_extraction(sentences, nlp):
+def launch_relation_extraction(sentences, nlp, max_len_ngram):
     for s in sentences:
-        yield extract_relations(s, nlp)
+        yield extract_relations(s, nlp, max_len_ngram)
 
 
-def extract_relations(sentence, nlp):
+def extract_relations(sentence, nlp, max_len_ngram):
     d = dict()
     for p in sentence.split('.'):
         doc = nlp(p)
@@ -15,10 +15,12 @@ def extract_relations(sentence, nlp):
         term_list = [term for term in term_list if not isinstance(term, spacy.tokens.token.Token)]
         for term in term_list:
             if any(token.pos_ == 'NOUN' and token.head.pos_ == 'VERB' and token.head.dep_ == 'ROOT' for token in term):
-                if term.root.dep_ in d:
-                    d.update({term.root.dep_: max([d[term.root.dep_], term], key=len)})
-                else:
-                    d.update({term.root.dep_: term})
+                ngram = clean_non_category_words(term)  # will return empty strings sometimes
+                if term_length_is_conform(ngram, max_len_ngram):
+                    if term.root.dep_ in d:
+                        d.update({term.root.dep_: max([d[term.root.dep_], term], key=len)})
+                    else:
+                        d.update({term.root.dep_: term})
     return {y: x for x, y in d.items()}
 
 
