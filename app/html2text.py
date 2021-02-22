@@ -2,7 +2,6 @@ import requests
 
 UIMA_URL = {"BASE": "http://staging.dgfisma.crosslang.com:8008",  # http://uima:8008
             "HTML2TEXT": "/html2text",
-            "TEXT2HTML": "/text2html",
             "TYPESYSTEM": "/html2text/typesystem",
             }
 

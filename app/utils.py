@@ -21,7 +21,6 @@ import fr_core_news_lg
 import nb_core_news_lg
 import it_core_news_lg
 
-GERMAN_CLASSIFIER_DIR = 'sentence_classifier/models/run_2021_01_14_16_56_45_b60e65d9a255'
 
 POS_TAG_DET = 'DET'
 
@@ -176,14 +175,6 @@ def get_stopwords(language_code):
     return STOP_WORDS
 
 
-def launch_term_extraction(language_code, corpus, max_len_ngram):
-    NLP = get_pos_tagger(language_code)
-    STOP_WORDS = get_stopwords(language_code)
-    GRAMMAR = get_noun_phrase_grammar(language_code)
-    terms = list(set(process_corpus(corpus, NLP, GRAMMAR, STOP_WORDS, max_len_ngram)))
-    return terms
-
-
 def visualise_terms(terms_dict):
     df = pd.DataFrame(terms_dict)
     voc = df.sort_values(by='weighted_frequency', ascending=False)
@@ -240,7 +231,6 @@ def get_life_events(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
     life_events = [el.text for el in soup.findAll('h2')]
     return life_events
-
 
 
 def get_classified_data(sentences, pred_labels):

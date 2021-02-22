@@ -5,6 +5,7 @@ import language_tool_python
 INVALID_POS_TAGS = ['DET', 'PUNCT', 'ADP', 'CCONJ', 'SYM', 'NUM', 'PRON', 'SCONJ', 'ADV']
 PUNCTUATION_AND_DIGITS = string.punctuation.replace('-', '0123456789').replace('\'', '')
 
+
 def clean_non_category_words_back(ngram):
     """
 
@@ -17,6 +18,7 @@ def clean_non_category_words_back(ngram):
         return clean_non_category_words_back(ngram[:-1])
     else:
         return ngram
+
 
 def clean_non_category_words_front(ngram):
     """
@@ -31,6 +33,7 @@ def clean_non_category_words_front(ngram):
     else:
         return ngram
 
+
 def clean_non_category_words(ngram):
     """
 
@@ -41,6 +44,7 @@ def clean_non_category_words(ngram):
     if clean_front_ngram is not None:
         clean_ngram = clean_non_category_words_back(clean_front_ngram)
         return clean_ngram
+
 
 def yield_terms(doc):
     """
@@ -65,13 +69,14 @@ def yield_terms(doc):
             yield doc[token.left_edge.i:token.right_edge.i + 1]
             yield doc[token.left_edge.i: token.i + 1]
 
+
 def term_grammar_is_clean(noun_phrase, NOUN_PHRASE_GRAMMAR):
     """
     :param noun_phrase: SpaCy span object
     :param NOUN_PHRASE_GRAMMAR: list of grammar rules for a noun phrase
     :param STOP_WORDS: list of stop words per language
     :return: True or False
-    The idea of a predefined grammar is quite limiting but allows for the extraction of clean terms
+    The idea of a predefined grammar is quite restrictive but allows for the extraction of clean terms
     it is possible to use the following code:
     """
     noun_phrase_pos = [str(token.pos_) for token in noun_phrase]
@@ -80,16 +85,19 @@ def term_grammar_is_clean(noun_phrase, NOUN_PHRASE_GRAMMAR):
     else:
         return False
 
+
 def term_text_is_clean(noun_phrase):
     """
 
     :param noun_phrase: SpaCy token or span, noun phrase of any length
     :return: True or False
     """
-    if noun_phrase.text.isascii() and all(not character in PUNCTUATION_AND_DIGITS for character in noun_phrase.text.strip()):
+    if noun_phrase.text.isascii() and all(
+            not character in PUNCTUATION_AND_DIGITS for character in noun_phrase.text.strip()):
         return True
     else:
         return False
+
 
 def term_does_not_contain_stopwords(noun_phrase, STOP_WORDS):
     """
@@ -102,6 +110,7 @@ def term_does_not_contain_stopwords(noun_phrase, STOP_WORDS):
         return True
     else:
         return False
+
 
 def term_length_is_conform(term, max_len_ngram):
     """
@@ -116,22 +125,30 @@ def term_length_is_conform(term, max_len_ngram):
         return False
 
 
-def process_terms(terms, language_code):
+def filter_terms(terms, language_code):
+    """
+
+    :param terms: list of terms
+    :param language_code: 'DE' / 'FR' / etc.
+    :return: 
+    """
     if language_code == 'DE':
         terms = [term for term in terms if term[0].isupper()]
     else:
         terms = [term.lower() for term in terms]
     tool = language_tool_python.LanguageTool(language_code)
-    final_terms = {}
+    final_terms = set()
     for x in terms:
         m = tool.check(x.capitalize())
-    if not m:
-        final_terms.add(x)
+        if not m:
+            final_terms.add(x)
     return final_terms
 
 
-def extract_terms(corpus, max_len_ngram, nlp, grammar=None, stop_words=None):
+def extract_terms(corpus, max_len_ngram, nlp, stop_words=None, grammar=None):
     """
+    :param stop_words: list of blacklisted words per language
+    :param grammar: list of lists that indicate allowed noun phrases
     :param max_len_ngram: int
     :param corpus: list of documents
     :return: list of terms
