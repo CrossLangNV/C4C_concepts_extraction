@@ -117,7 +117,7 @@ def main(f: Item4Cas):
 
 
 @app.post("/c4solr")
-def main(f: Item4Cas):
+def main(f: Item4Solr):
     decoded_cas_content = base64.b64decode(f.cas_content).decode('utf-8')
     cas = xmi2cas(decoded_cas_content)
     max_len_ngram = f.max_ngram_length
