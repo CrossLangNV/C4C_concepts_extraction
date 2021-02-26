@@ -70,22 +70,6 @@ def yield_terms(doc):
             yield doc[token.left_edge.i: token.i + 1]
 
 
-def term_grammar_is_clean(noun_phrase, NOUN_PHRASE_GRAMMAR):
-    """
-    :param noun_phrase: SpaCy span object
-    :param NOUN_PHRASE_GRAMMAR: list of grammar rules for a noun phrase
-    :param STOP_WORDS: list of stop words per language
-    :return: True or False
-    The idea of a predefined grammar is quite restrictive but allows for the extraction of clean terms
-    it is possible to use the following code:
-    """
-    noun_phrase_pos = [str(token.pos_) for token in noun_phrase]
-    if noun_phrase_pos in NOUN_PHRASE_GRAMMAR:
-        return True
-    else:
-        return False
-
-
 def term_text_is_clean(noun_phrase):
     """
 
@@ -106,7 +90,7 @@ def term_does_not_contain_stopwords(noun_phrase, STOP_WORDS):
     :param STOP_WORDS: set of stop words per language
     :return: True or False
     """
-    if any(word.text in STOP_WORDS for word in noun_phrase) == False:
+    if not any(word.text in STOP_WORDS for word in noun_phrase):
         return True
     else:
         return False
@@ -145,12 +129,12 @@ def filter_terms(terms, language_code):
     return final_terms
 
 
-def extract_terms(corpus, max_len_ngram, nlp, stop_words=None, grammar=None):
+def extract_terms(corpus, max_len_ngram, nlp, stop_words=None):
     """
-    :param stop_words: list of blacklisted words per language
-    :param grammar: list of lists that indicate allowed noun phrases
-    :param max_len_ngram: int
     :param corpus: list of documents
+    :param max_len_ngram: int
+    :param nlp: the SpaCy model
+    :param stop_words: list of blacklisted words per language
     :return: list of terms
     """
     for page in corpus:
@@ -169,10 +153,6 @@ def extract_terms(corpus, max_len_ngram, nlp, stop_words=None, grammar=None):
                         if stop_words:
                             condition_two = term_does_not_contain_stopwords(ngram, stop_words)
                             conditions.append(condition_two)
-
-                        if grammar:
-                            condition_three = term_grammar_is_clean(ngram, grammar)
-                            conditions.append(condition_three)
 
                         if all(conditions):
                             yield ' '.join([word.lemma_ for word in ngram]).strip()

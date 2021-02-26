@@ -11,6 +11,7 @@ import spacy_udpipe
 from string import punctuation
 from bs4 import BeautifulSoup
 import pandas as pd
+import contractions
 import requests
 from requests.auth import HTTPBasicAuth
 from sentence_classifier.models.BERT import BERTForSentenceClassification
@@ -21,44 +22,8 @@ import fr_core_news_lg
 import nb_core_news_lg
 import it_core_news_lg
 
-
+MODEL_DIR = 'sentence_classifier/models/run_2021_02_03_18_15_40_72271c125cfe'
 POS_TAG_DET = 'DET'
-
-NOUN_PHRASE_GRAMMAR_ROM = [['NOUN', 'ADP', 'NOUN'],
-                           ['NOUN', 'ADP', 'DET', 'NOUN'],
-                           ['NOUN', 'ADJ', 'ADP', 'NOUN'],
-                           ['NOUN', 'ADJ', 'SCONJ', 'ADJ'],
-                           ['DET', 'NOUN', 'ADJ'],
-                           ['NOUN', 'ADP', 'NOUN'],
-                           ['NOUN'],
-                           ['ADJ', 'NOUN'],
-                           ['ADJ', 'CCONJ', 'ADJ', 'NOUN'],
-                           ['PROPN'],
-                           ['NOUN', 'ADJ', 'ADJ'],
-                           ['PROPN', 'ADJ', 'ADJ'],
-                           ['NOUN', 'ADP', 'NOUN', 'ADP', 'NOUN'],
-                           ['NOUN', 'ADP', 'NOUN', 'ADJ'],
-                           ]
-
-NOUN_PHRASE_GRAMMAR_REST = [['NOUN'], ['PROPN'],
-                            ['ADJ', 'NOUN'], ['ADJ', 'PROPN'],
-                            ['ADJ', 'ADJ', 'NOUN'], ['ADJ', 'ADJ', 'PROPN'],
-                            ['ADJ', 'CCONJ', 'ADJ', 'NOUN'], ['ADJ', 'CCONJ', 'ADJ', 'PROPN'],
-                            ['NOUN', 'ADP', 'DET', 'NOUN'], ['NOUN', 'ADP', 'DET', 'PROPN'],
-                            ['PROPN', 'ADP', 'DET', 'NOUN'], ['PROPN', 'ADP', 'DET', 'PROPN'],
-                            ['NOUN', 'ADP', 'ADJ', 'ADJ', 'NOUN'], ['PROPN', 'ADP', 'ADJ', 'ADJ', 'PROPN'],
-                            ['PROPN', 'ADP', 'ADJ', 'ADJ', 'NOUN'], ['NOUN', 'ADP', 'ADJ', 'ADJ', 'PROPN'],
-                            ['ADJ', 'NOUN', 'ADP', 'DET', 'NOUN'], ['ADJ', 'PROPN', 'ADP', 'DET', 'NOUN'],
-                            ['ADJ', 'NOUN', 'ADP', 'DET', 'PROPN'], ['ADJ', 'PROPN', 'ADP', 'DET', 'PROPN']
-                            ]
-
-
-def get_noun_phrase_grammar(language_code):
-    if language_code == 'IT' or 'FR':
-        NOUN_PHRASE_GRAMMAR = NOUN_PHRASE_GRAMMAR_ROM
-    else:
-        NOUN_PHRASE_GRAMMAR = NOUN_PHRASE_GRAMMAR_REST
-    return NOUN_PHRASE_GRAMMAR
 
 
 def load_de_model():
@@ -108,6 +73,7 @@ def load_hr_model():
 def load_nb_model():
     NLP = nb_core_news_lg.load()
     return NLP
+
 
 def load_de_stopwords():
     stopwords = STOP_WORDS_DE.union(set(NLTK_STOPWORDS.words('german')))
@@ -200,7 +166,7 @@ def get_num_found(start_url, max_number_of_docs, auth_key, auth_value):
 
 
 def load_sentence_classifier(lang_code):
-    #TODO other languages
+    # TODO other languages
     if lang_code == 'DE':
         model = load_german_bert()
         return model
@@ -209,13 +175,21 @@ def load_sentence_classifier(lang_code):
 
 
 def load_german_bert():
-    model = BERTForSentenceClassification.from_german_bert(GERMAN_CLASSIFIER_DIR)
+    model = BERTForSentenceClassification.from_german_bert(MODEL_DIR)
     return model
 
 
 def clean_line(s):
+    """
+    :param s: the text segment
+    :return: the cleaned text segment
+    """
+    # clean
+    s = s.replace(u'\xa0', ' ')
+    s = contractions.fix(s)
     cleaned_line = s.translate(
-        str.maketrans('', '', punctuation.replace(',-./:;', '').replace('@', '').replace('+', '').replace('\'', '') + '←' + '↑'))
+        str.maketrans('', '', punctuation.replace(',-./:;', '').replace('@', '').replace('+', '').replace('\'',
+                                                                                                          '') + '←' + '↑'))
     return cleaned_line.strip()
 
 
