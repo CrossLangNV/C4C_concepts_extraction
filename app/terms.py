@@ -1,9 +1,73 @@
 import string
 import spacy
 import language_tool_python
+from typing import List, Tuple
 
 INVALID_POS_TAGS = ['DET', 'PUNCT', 'ADP', 'CCONJ', 'SYM', 'NUM', 'PRON', 'SCONJ', 'ADV']
 PUNCTUATION_AND_DIGITS = string.punctuation.replace('-', '0123456789').replace('\'', '')
+
+def extractAbbvTerm(tokens, t, sw):
+    """
+
+    :param tokens: list of tokens
+    :param t: the to be mapped abbreviation
+    :param sw: list of stopwords
+    :return:
+    """
+    i = tokens.index(t)
+    if i - 10 > 0:
+        start = i - 10
+    else:
+        start = 0
+    if i + 10 < len(tokens):
+        end = i + 10
+    else:
+        end = len(tokens) - 1
+
+    l = tokens[start:end]
+    candidates = set()
+    for i, x in enumerate(l):
+        slice = l[i: i + len(t)]
+        letters = t.lower()
+        if t in slice:
+            slice.remove(t)
+        for x in slice:
+            first_letter = x[0].lower()
+            if x != t and first_letter in letters:
+                letters = letters.replace(first_letter, '')
+
+            slice = [x for x in slice if x not in sw and x[0].lower() in t.lower()]
+            if len(slice) > len(t) * 0.65:
+                candidates.add(' '.join(slice).strip())
+    if candidates:
+        return max(candidates, key=len)
+
+
+
+def extractAbbv(doc, sw) -> List[Tuple[str, str]]:
+    '''
+
+    :param doc: SpaCy object Doc
+    :param sw: list of stopwords
+    :return: A List of Tuples containing abbreviations.
+    '''
+
+    tokens = [t.text for t in doc]
+    res = []
+    for t in tokens:
+        prop = sum(1 for c in t if c.isupper()) / len(t)
+        if (prop > 0.5
+                and 1 < len(t) < 6
+                and t.lower() not in sw
+                and t.isalpha()):
+            term = extractAbbvTerm(tokens, t, sw)
+            if (term is not None):
+                res.append((t, term))
+    abvs = []
+    for x in list(set(res)):
+        abvs.append((x[0].strip(), x[1].strip()))
+
+    return abvs
 
 
 def clean_non_category_words_back(ngram):
