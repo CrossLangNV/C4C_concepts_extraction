@@ -187,6 +187,7 @@ def clean_line(s):
     # clean
     s = s.replace(u'\xa0', ' ')
     s = contractions.fix(s)
+    s = s.replace('\'', ' \' ')
     cleaned_line = s.translate(
         str.maketrans('', '', punctuation.replace(',-./:;', '').replace('@', '').replace('+', '').replace('\'',
                                                                                                           '') + '←' + '↑'))
