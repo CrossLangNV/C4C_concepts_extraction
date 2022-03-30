@@ -1,4 +1,4 @@
-# c4concepts
+# C4C Concepts
 ## Instructions
 This app currently extracts terms from the c4c data stored in solr, and returns a list that contains metadata per document, e.g. examples/example_output.json
 
