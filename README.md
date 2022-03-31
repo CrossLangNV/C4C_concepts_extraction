@@ -31,9 +31,9 @@ Make sure that the data of the required 'gemeente' has been scraped, and is stor
 The parameter max_number_of_docs was added to avoid iterating over all the data each time the app is launched.
 The parameter max_ngram_length is self-explanatory.
 
-## TODO
-- Add device parameter ('cpu' or 'cuda:0')
-- Relation extraction annotation
+[//]: # (## TODO)
+[//]: # (- Add device parameter ('cpu' or 'cuda:0'))
+[//]: # (- Relation extraction annotation)
 
 ## Procedures detection:
 We make use of a pretrained multilingual BERT model to detect segments that contain procedures.
